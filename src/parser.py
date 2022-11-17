@@ -44,8 +44,5 @@ class Parser:
                 executor.map(self.remove_file, os.listdir("temp"))
 
 
-def main():
+if __name__ == "__main__":
     Parser()
-
-
-main()
