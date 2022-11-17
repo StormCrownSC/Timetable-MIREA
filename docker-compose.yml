@@ -4,19 +4,15 @@ services:
 
   database:
     build: 
-      context: ./images/sql
-      dockerfile: Dockerfile.postgres
+      context: ./
+      dockerfile: images/sql/Dockerfile.postgres
     restart: unless-stopped
     environment:
-      POSTGRES_DB: TimeTableDB
-      POSTGRES_USER: denis
-      POSTGRES_PASSWORD: password
-      DB_HOST: database
-      DB_PORT: 5432
-    volumes:
-      - ./images/sql/create_tables.sql:/docker-entrypoint-initdb.d/create_tables.sql
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -d TimeTableDB -U denis"]
+      test: ["CMD-SHELL", "pg_isready -d ${DB_NAME} -U ${POSTGRES_USER}"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -27,22 +23,15 @@ services:
       context: ./
       dockerfile: images/python/Dockerfile.server
     restart: unless-stopped
-    # Временно
+    # Временно для тестирования и разработки
     volumes:
       - ./src:/server
-    # Временно
-    command: >
-      sh -c "python3 timetable/manage.py migrate &&
-             python3 timetable/manage.py runserver 0.0.0.0:8000"
-    stdin_open: true
-    tty: true
-    environment:
-      DB_ENGINE: django.db.backends.postgresql
-      DB_NAME: TimeTableDB
-      POSTGRES_USER: denis
-      POSTGRES_PASSWORD: password
-      DB_HOST: database
-      DB_PORT: 5432
+    # Временно для тестирования и разработки
+    command: bash -rc "python3 timetable/manage.py makemigrations &&
+      python3 timetable/manage.py migrate &&
+      python3 timetable/manage.py runserver 0.0.0.0:8000"
+    env_file:
+      - .env
     healthcheck:
       test: curl -sS http://0.0.0.0:8000 || echo 1
       interval: 5s
@@ -53,14 +42,13 @@ services:
         condition: service_healthy
 
   nginx:
-    image: nginx:latest
+    build:
+      context: ./
+      dockerfile: images/nginx/Dockerfile.nginx
     restart: unless-stopped
     ports:
       - '8080:8080'
-    volumes:
-      - ./images/nginx/default.conf:/etc/nginx/conf.d/default.conf
     depends_on:
-      database:
-        condition: service_healthy
       server:
         condition: service_healthy
+    

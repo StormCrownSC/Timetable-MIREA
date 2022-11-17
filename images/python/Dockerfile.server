@@ -5,4 +5,3 @@ RUN apt-get -qq update && apt-get -qq install python3-pip && \
     pip3 install pip --upgrade && pip install -r /tmp/requirements.txt && mkdir /server/
 #COPY ./src /server/
 WORKDIR /server
-#RUN python3 timetable/manage.py migrate
