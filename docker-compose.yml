@@ -17,11 +17,11 @@ services:
       timeout: 5s
       retries: 5
 
-  server:
+  django:
     hostname: timetable.mirea
     build:
       context: ./
-      dockerfile: images/python/Dockerfile.server
+      dockerfile: images/django/Dockerfile.django
     restart: unless-stopped
     # Временно для тестирования и разработки
     volumes:
@@ -49,6 +49,6 @@ services:
     ports:
       - '8080:8080'
     depends_on:
-      server:
+      django:
         condition: service_healthy
     
