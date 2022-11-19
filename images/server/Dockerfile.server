@@ -6,4 +6,4 @@ RUN apt-get -qq update && apt-get -qq install python3-pip && \
 COPY ./images/server/server /server/
 WORKDIR /server
 CMD python3 main.py
-HEALTHCHECK --interval=10s --timeout=60s --retries=10 CMD ls success || exit 1
+HEALTHCHECK --interval=10s --timeout=100s --retries=30 CMD ls success || exit 1
