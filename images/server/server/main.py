@@ -1,20 +1,21 @@
 #!/usr/bin/env python3
 from concurrent.futures import ThreadPoolExecutor as Pool
-
 import os
 import re
 import requests
 from bs4 import BeautifulSoup
 import openpyxl
+import schedule
+import time
+import json
 
 
 class Parser:
     def __init__(self):
         self.links = self.find_urls()
         self.timetable = {}
-        #self.loader()
+        self.loader()
         self.read_data()
-        print(self.timetable)
 
     @staticmethod
     def find_urls():
@@ -41,6 +42,8 @@ class Parser:
         os.remove("temp/" + file)
 
     def check_directory(self):
+        if os.path.exists("success"):
+            os.remove("success")
         if not os.path.exists("temp"):
             os.mkdir("temp")
         elif len(os.listdir("temp")) != 0:
@@ -105,7 +108,17 @@ class Parser:
     def read_data(self):
         with Pool(max_workers=len(os.listdir("temp"))) as executor:
             executor.map(self.read_files, os.listdir("temp"))
-        return "Success"
+        
+        self.check_directory()
+        if os.path.exists("temp"):
+            os.rmdir("temp")
+        with open("success", "w") as file:
+            file.write("")
+            
 
 if __name__ == "__main__":
     Parser()
+    schedule.every().day.at("00:00").do(Parser)
+    while True:
+        schedule.run_pending()
+        time.sleep(1)

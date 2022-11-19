@@ -22,12 +22,7 @@ services:
     build:
       context: ./
       dockerfile: images/server/Dockerfile.server
-    restart: unless-stopped
-    # Временно для тестирования и разработки
-    volumes:
-      - ./images/server/server:/server
-    # Временно для тестирования и разработки
-    command: bash -rc "python3 main.py"
+    #restart: unless-stopped
     stdin_open: true
     tty: true
     env_file:
@@ -57,7 +52,7 @@ services:
       timeout: 5s
       retries: 5
     depends_on:
-      database:
+      server:
         condition: service_healthy
 
   nginx:
