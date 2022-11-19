@@ -16,6 +16,23 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    
+  server:
+    hostname: server.mirea
+    build:
+      context: ./
+      dockerfile: images/server/Dockerfile.server
+    restart: unless-stopped
+    # Временно для тестирования и разработки
+    volumes:
+      - ./images/server/server:/server
+    # Временно для тестирования и разработки
+    #command: 
+    env_file:
+      - .env
+    depends_on:
+      database:
+        condition: service_healthy
 
   django:
     hostname: timetable.mirea
@@ -25,7 +42,7 @@ services:
     restart: unless-stopped
     # Временно для тестирования и разработки
     volumes:
-      - ./src:/server
+      - ./src:/django
     # Временно для тестирования и разработки
     command: bash -rc "python3 timetable/manage.py makemigrations &&
       python3 timetable/manage.py migrate &&
