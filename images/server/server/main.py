@@ -5,17 +5,24 @@ import re
 import requests
 from bs4 import BeautifulSoup
 import openpyxl
-import schedule
 import time
 import json
+from datetime import datetime
 
 
 class Parser:
     def __init__(self):
+        self.log("start parser")
         self.links = self.find_urls()
         self.timetable = {}
+        self.log("start loader")
         self.loader()
+        self.log("start read data")
         self.read_data()
+
+    @staticmethod
+    def log(text):
+        print(datetime.utcnow().isoformat(sep=' ', timespec='milliseconds') + " UTC LOG: " + text)
 
     @staticmethod
     def find_urls():
@@ -108,17 +115,17 @@ class Parser:
     def read_data(self):
         with Pool(max_workers=len(os.listdir("temp"))) as executor:
             executor.map(self.read_files, os.listdir("temp"))
-        
+    
+    def __del__(self):
         self.check_directory()
         if os.path.exists("temp"):
             os.rmdir("temp")
         with open("success", "w") as file:
             file.write("")
-            
+        self.log("end")
+
 
 if __name__ == "__main__":
-    Parser()
-    schedule.every().day.at("00:00").do(Parser)
     while True:
-        schedule.run_pending()
-        time.sleep(1)
+        Parser()
+        time.sleep(14400)
