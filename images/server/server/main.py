@@ -15,9 +15,7 @@ class Parser:
         self.log("start parser")
         self.links = self.find_urls()
         self.timetable = {}
-        self.log("start loader")
         self.loader()
-        self.log("start read data")
         self.read_data()
 
     @staticmethod
@@ -30,6 +28,7 @@ class Parser:
         return re.findall('<a class="uk-link-toggle" href="([\S]+.xl[\w]+)" target="_blank">', str(page))
 
     def loader(self):
+        self.log("start loader")
         self.check_directory()
         with Pool(max_workers=len(self.links)) as executor:
             executor.map(self.download, self.links)
@@ -93,14 +92,12 @@ class Parser:
                             temp_dict[type_of_week][day_of_the_week.get(day_index)][lesson_number] = tmp_data
 
                         self.timetable[elem.value] = temp_dict
-                            
-                    if flag_optimize is False and index > 10:
+                    if flag_optimize is False and index > 8:
                         break
-                if flag:
+                if flag is True:
                     break
 
     def data_of_lesson(self, sheet, item, col, global_col):
-        #print(sheet, item, col, global_col)
         new_item = item
         if sheet.cell(row=new_item, column=global_col).value is None:
             new_item -= 1
@@ -113,6 +110,7 @@ class Parser:
         return sheet.cell(row=item, column=global_col+3).value, lesson_number, temp_array
         
     def read_data(self):
+        self.log("start read data")
         with Pool(max_workers=len(os.listdir("temp"))) as executor:
             executor.map(self.read_files, os.listdir("temp"))
     
