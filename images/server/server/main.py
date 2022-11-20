@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
-from concurrent.futures import ThreadPoolExecutor as Pool
 import os
 import re
-import requests
-from bs4 import BeautifulSoup
-import openpyxl
 import time
 import json
 from datetime import datetime
+import requests
+from bs4 import BeautifulSoup
+import openpyxl
+from concurrent.futures import ThreadPoolExecutor as Pool
 
 
 class Parser:
@@ -16,7 +16,7 @@ class Parser:
         self.links = self.find_urls()
         self.timetable = {}
         self.loader()
-        self.read_data()
+        self.parse_data()
 
     @staticmethod
     def log(text):
@@ -109,8 +109,8 @@ class Parser:
             sheet.cell(row=item, column=col+2).value, sheet.cell(row=item, column=col+3).value]
         return sheet.cell(row=item, column=global_col+3).value, lesson_number, temp_array
         
-    def read_data(self):
-        self.log("start read data")
+    def parse_data(self):
+        self.log("start parse data")
         with Pool(max_workers=len(os.listdir("temp"))) as executor:
             executor.map(self.read_files, os.listdir("temp"))
     
