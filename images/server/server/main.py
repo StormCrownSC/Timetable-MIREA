@@ -17,8 +17,7 @@ import pyexcel as p
 class Parser:
     def __init__(self):
         self.log("start parser")
-        self.links = list()
-        self.institute_list = list()
+        self.links = dict()
         self.timetable = dict()
         self.lecturer_list = set()
         self.lessons_list = self.list_of_lessons()
@@ -39,26 +38,36 @@ class Parser:
     def parse_site(self):
         self.log("parse site")
         page = BeautifulSoup(requests.get("https://www.mirea.ru/schedule/").text, "html.parser")
-        self.institute_list = list((set(re.findall(r"Институт [\w \.]+", str(page)))))
-        for elem in self.institute_list:
-            elem = " ".join(elem.split(" "))
-        self.links = re.findall(r'<a class="uk-link-toggle" href="([\S]+.xl[\w]+)" target="_blank">', str(page))
-
-    def loader(self):
-        self.log("start loader")
-        self.check_directory()
-        with Pool(max_workers=len(self.links)) as executor:
-            executor.map(self.download, self.links)
+        data_of_institute = page.findAll('a', attrs={"class": "uk-text-bold"})
+        for elem in data_of_institute:
+            temp_data = re.findall(r"Институт [\w \.]+", str(elem))
+            if len(temp_data) > 0:
+                temp_data_of_link = elem.find_parent("div").find_parent("div").find_all_next('a', attrs={"class": "uk-link-toggle"})
+                temp_link = re.findall(r'<a class="uk-link-toggle" href="([\S]+.xl[\w]+)" target="_blank">', str(temp_data_of_link))
+                if len(temp_link) > 0:
+                    for i, item in enumerate(temp_data_of_link):
+                        tmp = item.find('div', attrs={"class": "uk-link-heading uk-margin-small-top"})
+                        temp_curs = re.findall(r"(\d) курс", str(tmp) if tmp is not None else "")
+                        if len(temp_curs) > 0:
+                            self.links[temp_link[i]] = {"institute": temp_data[0], "curs": temp_curs[0]}
 
     @staticmethod
     def download(link):
-        with open("temp/" + link.split("/")[-1], "wb") as file:
+        link, data = link
+        with open("temp/" + data["institute"] + "_-_" + data["curs"] + "_-_" + link.split("/")[-1], "wb") as file:
             link_content = requests.get(link)
             count_request = 0
             while link_content.status_code != 200 and count_request != 100:
                 link_content = requests.get(link)
                 count_request += 1
             file.write(link_content.content)
+
+
+    def loader(self):
+        self.log("start loader")
+        self.check_directory()
+        with Pool(max_workers=len(self.links)) as executor:
+            executor.map(self.download, self.links.items())
 
     @staticmethod
     def remove_file(file):
@@ -74,104 +83,91 @@ class Parser:
                 executor.map(self.remove_file, os.listdir("temp"))
 
     def data_of_lesson(self, sheet, item, col, global_col):
-        new_item = item
-        if sheet.cell(row=new_item, column=global_col).value is None:
-            new_item -= 1
-        lesson_number = sheet.cell(row=new_item, column=global_col).value
-        if sheet.cell(row=new_item-2, column=col).value == 7 or lesson_number == 8:
-            lesson_number += 1
-        tmp_of_lecturer = sheet.cell(row=item, column=col+2).value
-        lecturer_temp = re.findall(r"[\w]+. \w.\w.", tmp_of_lecturer) if tmp_of_lecturer is not None else []
+        try:
+            new_item = item
+            if sheet.cell(row=new_item, column=global_col).value is None:
+                new_item -= 1
+            lesson_number = sheet.cell(row=new_item, column=global_col).value
+            if sheet.cell(row=new_item-2, column=col).value == 7 or lesson_number == 8:
+                lesson_number += 1
+            tmp_of_lecturer = sheet.cell(row=item, column=col+2).value
+            lecturer_temp = re.findall(r"[\w]+. \w.\w.", tmp_of_lecturer) if tmp_of_lecturer is not None else []
+            
+            for tmp in lecturer_temp:
+                self.lecturer_list.add(tmp.rstrip())
+
+            lesson_title = ' '.join(str(sheet.cell(row=item, column=col).value).split())
+            type_of_lesson = ' '.join(str(sheet.cell(row=item, column=col+1).value).split())
+            auditorium = ' '.join(str(sheet.cell(row=item, column=col+3).value).split())
+            
+            temp_array = [lesson_title, type_of_lesson, ' '.join(lecturer_temp), auditorium]
+            type_of_week = 2
+            if sheet.cell(row=item, column=global_col+3).value == "I":
+                type_of_week = 1
+            return type_of_week, lesson_number, temp_array
+        except:
+            return None, None, None
         
-        for tmp in lecturer_temp:
-            self.lecturer_list.add(tmp.rstrip())
-
-        temp_array = [sheet.cell(row=item, column=col).value, sheet.cell(row=item, column=col+1).value,
-            ' '.join(lecturer_temp), sheet.cell(row=item, column=col+3).value]
-        type_of_week = 2
-        if sheet.cell(row=item, column=global_col+3).value == "I":
-            type_of_week = 1
-        return type_of_week, lesson_number, temp_array
-        
-    def info_institute_and_course(self, sheet, file):
-        institute_name = ""
-        course_num = 0
-        cell_temp_course = sheet.cell(row=1, column=2).value
-        cell_temp_institute = sheet.cell(row=1, column=2).value
-        data_temp_course = re.findall(r"(\d) курс", cell_temp_course if cell_temp_course is not None else "")
-        data_temp_institute = re.findall(r"(Инстит[\D]+)", cell_temp_institute if cell_temp_institute is not None else "")
-        if len(data_temp_institute) == 1:
-            institute_name = re.sub("Института", "Институт", data_temp_institute[0]).split(" на")[0]
-            institute_name = institute_name.split(" с")[0]
-            institute_name = ' '.join(institute_name.split())
-            if len(re.findall(r"ПТИП", institute_name)) > 0:
-                institute_name = "Институт перспективных технологий и индустриального программирования"
-        if len(data_temp_course) == 1:
-            course_num = data_temp_course[0]
-            course_num = ' '.join(course_num.split())
-
-        if len(data_temp_institute) == 0:
-            if len(re.findall(r"IPTIP", file)) > 0:
-                institute_name = "Институт перспективных технологий и индустриального программирования"
-
-        if len(data_temp_course) == 0:
-            if len(re.findall(r"(\d)\.kurs", file)) > 0:
-                course_num = re.findall(r"(\d)-kurs", file)[0]
-
-        return institute_name, course_num
-
     def read_files(self, file):
-        if file[-1:] != "x":
-            p.save_book_as(file_name="temp/" + file, dest_file_name="temp/" + file + "x")
-            os.remove("temp/" + file)
-            file += "x"
-        book = openpyxl.load_workbook("temp/" + file)
-        for name in book.sheetnames:
-            sheet = book[name]
-            flag = False
-            institute_name, course_num = self.info_institute_and_course(sheet, file)
+        try:
+            if file[-1:] != "x":
+                p.save_book_as(file_name="temp/" + file, dest_file_name="temp/" + file + "x")
+                os.remove("temp/" + file)
+                file += "x"
+            book = openpyxl.load_workbook("temp/" + file)
+            institute_name, course_num, temple = file.split("_-_")
+            for name in book.sheetnames:
+                sheet = book[name]
+                flag = False
 
-            for index, arr in enumerate(sheet):
-                flag_optimize = False
-                global_col = None
-                max_row = sheet.max_row
-                first_len_flag = True
-                for elem in arr:
-                    if len(re.findall(r"\w\w\w\w\-\d\d\-\d\d", str(elem.value))) != 0:
-                        flag = True
-                        flag_optimize = True
-                        col = elem.column
-                        letter = elem.row
-                        if global_col is None:
-                            global_col = elem.column - 4
-                        temp_dict = {1: {}, 2: {}}
-                        day_index = 0
-                        for item in range(letter + 2, max_row):
-                            if first_len_flag is True and sheet.cell(row=item, column=global_col).value is None \
-                                and sheet.cell(row=item-1, column=global_col).value is None:
-                                first_len_flag = False
-                                max_row = item
-                                break
-                            if sheet.cell(row=item, column=global_col).value is not None and \
-                                re.match(r'1', str(sheet.cell(row=item, column=global_col).value)):
-                                day_index += 1
-                                temp_dict[1][day_index] = {}
-                                temp_dict[2][day_index] = {}
-                            type_of_week, lesson_number, tmp_data = self.data_of_lesson(sheet, item, col, global_col)
-                            temp_dict[type_of_week][day_index][lesson_number] = tmp_data
-                        
-                        enter_data = {"data": temp_dict, "institute": institute_name, "course": course_num}
-                        self.timetable[re.findall(r"\w\w\w\w\-\d\d\-\d\d", str(elem.value))[0]] = enter_data
-                    if flag_optimize is False and index > 10:
+                for index, arr in enumerate(sheet):
+                    flag_optimize = False
+                    global_col = None
+                    max_row = sheet.max_row
+                    first_len_flag = True
+                    for elem in arr:
+                        if len(re.findall(r"\w\w\w\w\-\d\d\-\d\d", str(elem.value))) != 0:
+                            flag = True
+                            flag_optimize = True
+                            col = elem.column
+                            letter = elem.row
+                            if global_col is None:
+                                global_col = elem.column - 4
+                            temp_dict = {1: {}, 2: {}}
+                            day_index = 0
+                            for item in range(letter + 2, max_row):
+                                if first_len_flag is True and sheet.cell(row=item, column=global_col).value is None \
+                                    and sheet.cell(row=item-1, column=global_col).value is None:
+                                    first_len_flag = False
+                                    max_row = item
+                                    break
+                                if sheet.cell(row=item, column=global_col).value is not None and \
+                                    re.search(r'1', str(sheet.cell(row=item, column=global_col).value)):
+                                    day_index += 1
+                                    temp_dict[1][day_index] = {}
+                                    temp_dict[2][day_index] = {}
+                                type_of_week, lesson_number, tmp_data = self.data_of_lesson(sheet, item, col, global_col)
+                                if type(lesson_number) == int:
+                                    temp_dict[type_of_week][day_index][lesson_number] = tmp_data
+                            
+                            enter_data = {"data": temp_dict, "institute": institute_name, "course": course_num}
+                            self.timetable[re.findall(r"\w\w\w\w\-\d\d\-\d\d", str(elem.value))[0]] = enter_data
+                        if flag_optimize is False and index > 10:
+                            break
+                    if flag is True:
                         break
-                if flag is True:
-                    break
+            return 1
+        except:
+            return 0
 
     def parse_data(self):
         self.log("start parse data")
         list_of_file = os.listdir("temp")
+        bad_files = 0
         for index, elem in enumerate(list_of_file):
-            self.read_files(elem)
+            if self.read_files(elem) == 0:
+                bad_files += 1
+        self.log("read " + str(round(((len(list_of_file) - bad_files) / len(list_of_file)) * 100)) + "% of files")
     
     @staticmethod
     def degree_of_letter(letter):
@@ -185,10 +181,10 @@ class Parser:
 
     def timetable_table(self, connection):
         with connection.cursor() as cursor:
-            insert_query = "INSERT INTO timetable (id_to_group, subject_to_number, id_lectur, subject_title, auditorium, day_week, type_of_week) VALUES"
             for num, arr in self.timetable.items():
-                cursor.execute("SELECT id_group FROM study_group \
-                    WHERE group_name = '" + str(num) + "'")
+                edit = False
+                insert_query = "INSERT INTO timetable (id_to_group, subject_to_number, id_lectur, subject_title, auditorium, day_week, type_of_week) VALUES"
+                cursor.execute("SELECT id_group FROM study_group WHERE group_name = '" + str(num) + "'")
                 id_group = str(cursor.fetchone())[1:-2]
                 for type_of_week, type_of_week_arr in arr["data"].items():
                     for day_week, day_array in type_of_week_arr.items():
@@ -196,24 +192,31 @@ class Parser:
                             if cursor.execute("SELECT COUNT(*) FROM timetable WHERE id_to_group = '" + str(id_group) + "' and " + \
                                 "subject_to_number = '" + str(subject_to_number) + "' and " + "day_week = '" + str(day_week) + "' and " + \
                                 "type_of_week = '" + str(type_of_week) + "'") is None:
+                                edit = True
                                 subject_title = subject_number_array[0]
                                 auditorium = subject_number_array[3]
-                                cursor.execute("SELECT id_lectur FROM lecturer \
+                                cursor.execute("SELECT id_lecturer FROM lecturer \
                                     WHERE full_name = '" + str(subject_number_array[2]) + "'")
                                 id_lectur = str(cursor.fetchone())[1:-2]
-                                insert_query += " ('" + str(id_group) + "', '" + str(subject_to_number) + "', '" + str(id_lectur) + \
-                                    "', '" + str(subject_title) + "', '" + str(auditorium) + "', '" + str(day_week) + "', '" + \
+                                if not id_lectur.isdigit():
+                                    id_lectur = "NULL"
+                                else:
+                                    id_lectur = "'" + id_lectur + "'"
+
+                                insert_query += " ('" + str(id_group) + "', '" + str(subject_to_number) + "', " + str(id_lectur) + \
+                                    ", '" + str(subject_title) + "', '" + str(auditorium) + "', '" + str(day_week) + "', '" + \
                                         str(type_of_week) + "'),"
-            insert_query = insert_query[:-1]
+                if edit is True:
+                    insert_query = insert_query[:-1]
+                    cursor.execute(insert_query)
+                    connection.commit()
             self.log("Таблица пар успешно заполнена")
-            cursor.execute(insert_query)
-            connection.commit()
 
     def study_group_table(self, connection):
         with connection.cursor() as cursor:
-            insert_query = "INSERT INTO study_group (group_name, id_institute, id_of_course, id_degree) VALUES"
             for num, elem in self.timetable.items():
                 if cursor.execute("SELECT COUNT(*) FROM study_group WHERE group_name = '" + str(num) + "'") is None:
+                    insert_query = "INSERT INTO study_group (group_name, id_institute, id_of_course, id_degree) VALUES"
                     cursor.execute("SELECT id_of_the_institute FROM institute \
                         WHERE name_of_the_institute = '" + str(elem["institute"]) + "'")
                     id_institute = str(cursor.fetchone())[1:-2]
@@ -223,53 +226,53 @@ class Parser:
                         WHERE degree_of_study = '" + str(self.degree_of_letter(num[2])) + "'")
                     id_degree = str(cursor.fetchone())[1:-2]
                     insert_query += " ('" + str(num) + "', '" + str(id_institute) + "', '" + str(id_of_course) + "', '" + str(id_degree) + "'),"
-            insert_query = insert_query[:-1]
-            cursor.execute(insert_query)
-            connection.commit()
+                    insert_query = insert_query[:-1]
+                    cursor.execute(insert_query)
+                    connection.commit()
             self.log("Таблица групп успешно заполнена")
 
     def institute_table(self, connection):
         with connection.cursor() as cursor:
-            insert_query = "INSERT INTO institute (name_of_the_institute) VALUES"
-            for elem in self.institute_list:
-                if cursor.execute("SELECT COUNT(*) FROM institute WHERE name_of_the_institute = '" + str(elem) + "'") is None:
-                    insert_query += " ('" + str(elem) + "'),"
-            insert_query = insert_query[:-1]
-            cursor.execute(insert_query)
-            connection.commit()
+            for elem in self.links.values():
+                if cursor.execute("SELECT COUNT(*) FROM institute WHERE name_of_the_institute = '" + str(elem["institute"]) + "'") is None:
+                    insert_query = "INSERT INTO institute (name_of_the_institute) VALUES"
+                    insert_query += " ('" + str(elem["institute"]) + "'),"
+                    insert_query = insert_query[:-1]
+                    cursor.execute(insert_query)
+                    connection.commit()
             self.log("Таблица институтов успешно заполнена")
 
     def degree_table(self, connection):
         with connection.cursor() as cursor:
-            insert_query = "INSERT INTO degree (degree_of_study) VALUES"
             for elem in self.degree_list:
                 if cursor.execute("SELECT COUNT(*) FROM degree WHERE degree_of_study = '" + str(elem) + "'") is None:
+                    insert_query = "INSERT INTO degree (degree_of_study) VALUES"
                     insert_query += " ('" + str(elem) + "'),"
-            insert_query = insert_query[:-1]
-            cursor.execute(insert_query)
-            connection.commit()
+                    insert_query = insert_query[:-1]
+                    cursor.execute(insert_query)
+                    connection.commit()
             self.log("Таблица уровней обучения успешно заполнена")
 
     def call_schedule_table(self, connection):
         with connection.cursor() as cursor:
-            insert_query = "INSERT INTO call_schedule (subject_number, time_start, time_end) VALUES"
             for num, elem in self.lessons_list.items():
                 if cursor.execute("SELECT COUNT(*) FROM call_schedule WHERE subject_number = '" + str(num) + "'") is None:
+                    insert_query = "INSERT INTO call_schedule (subject_number, time_start, time_end) VALUES"
                     insert_query += " ('" + str(num) + "', '" + str(elem[0]) + "', '" + str(elem[1]) + "'),"
-            insert_query = insert_query[:-1]
-            cursor.execute(insert_query)
-            connection.commit()
+                    insert_query = insert_query[:-1]
+                    cursor.execute(insert_query)
+                    connection.commit()
             self.log("Таблица звонков успешно заполнена")
 
     def lecturer_table(self, connection):
         with connection.cursor() as cursor:
-            insert_query = "INSERT INTO lecturer (full_name) VALUES"
             for elem in self.lecturer_list:
                 if cursor.execute("SELECT COUNT(*) FROM lecturer WHERE full_name = '" + str(elem) + "'") is None:
+                    insert_query = "INSERT INTO lecturer (full_name) VALUES"
                     insert_query += " ('" + str(elem) + "'),"
-            insert_query = insert_query[:-1]
-            cursor.execute(insert_query)
-            connection.commit()
+                    insert_query = insert_query[:-1]
+                    cursor.execute(insert_query)
+                    connection.commit()
             self.log("Таблица преподавателей успешно заполнена")
 
     def open_database(self):
@@ -288,11 +291,10 @@ class Parser:
                 self.institute_table(connection)
                 self.study_group_table(connection)
                 self.timetable_table(connection)
-
                 self.log("Соединение с PostgreSQL закрыто")
 
         except (Exception, Error) as error:
-            print("Ошибка при работе с PostgreSQL", error)
+            self.log("Ошибка при работе с PostgreSQL")
 
     @staticmethod
     def list_of_lessons():

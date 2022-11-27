@@ -62,8 +62,8 @@ CREATE TABLE IF NOT EXISTS timetable
     id_to_group integer NOT NULL,
     subject_to_number integer NOT NULL,
     id_lectur integer,  
-    subject_title character(100) NOT NULL,
-    auditorium character(100),
+    subject_title character(500) NOT NULL,
+    auditorium character(500),
     day_week integer NOT NULL,
     type_of_week integer NOT NULL,
     CONSTRAINT fkey PRIMARY KEY (id_to_group, subject_to_number, day_week, type_of_week)
