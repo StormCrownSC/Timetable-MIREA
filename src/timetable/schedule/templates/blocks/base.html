@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+  {% block head %}
+    <meta charset="UTF-8">
+    <meta name="author" content="Сироткин Денис">
+    <meta name="description" content="Личный сайт">
+    <meta name="keywords" content="programm,programming,html,css,js,python,программирование,программист,код">
+    <link rel="stylesheet" media="all" href="{% static "css/style.css" %}" />
+    <link rel="icon" type="image/x-icon" href="{% static "images/favicon.ico" %}">
+    <title>{% block title %}{% endblock %}</title>
+  {% endblock %}
+</head>
+<body>
+    <header>
+      {% block header %}
+        <header class="header-left">
+            <a class="main_header" href="/">Главная</a>
+            <a class="timetable_header" href="/timetable/">Расписание</a>
+        </header>
+        <header class="header-right">
+            <div class="dropdown">
+                <a class="settings">Настройки</a>
+                <div id="popup" class="dropdown-content" style="display: none">
+                    <a class="background">Фон</a>
+                </div>
+              </div>
+            <a class="login" href="/login/">Войти</a>
+        </header>
+      {% endblock %}
+    </header>
+    <main>
+        {% block main %}
+        {% endblock %}
+    </main>
+    <script type="text/javascript" src={% static "js/main.js" %}></script>
+</body>

@@ -1,15 +1,5 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="author" content="Сироткин Денис">
-    <meta name="description" content="Личный сайт">
-    <meta name="keywords" content="programm,programming,html,css,js,python,программирование,программист,код">
-    <!--<link rel="stylesheet" href="/assets/css/style.css">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.4.1/jquery.min.js" type="text/javascript"></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.1/jquery-ui.min.js"></script> -->
-    <title>Главная</title>
-</head>
-<body>
-    <h1>Hello</h1>
-</body>
+{% extends "blocks/base.html" %}
+{% block title %}Главная{% endblock %}
+{% block main %}
+    <h1>Главная страничка</h1>
+{% endblock %}

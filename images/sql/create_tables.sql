@@ -2,6 +2,17 @@ CREATE DATABASE TimeTableDB;
 ALTER ROLE denis SET client_encoding TO 'utf8';
 GRANT ALL PRIVILEGES ON DATABASE TimeTableDB TO denis;
 
+CREATE SEQUENCE users_id_user_seq START WITH 1;
+
+CREATE TABLE IF NOT EXISTS users
+(
+    user_id integer NOT NULL DEFAULT nextval('users_id_user_seq'),
+    user_name character(100) NOT NULL,
+    user_password character(50) NOT NULL, 
+    user_email character(100) NOT NULL,
+    CONSTRAINT fkey PRIMARY KEY (user_id)
+);
+
 CREATE SEQUENCE lecturer_id_lecturer_seq START WITH 1;
 
 CREATE TABLE IF NOT EXISTS lecturer

@@ -22,7 +22,7 @@ services:
     build:
       context: ./
       dockerfile: images/server/Dockerfile.server
-    #restart: unless-stopped
+    restart: unless-stopped
     stdin_open: true
     tty: true
     env_file:
