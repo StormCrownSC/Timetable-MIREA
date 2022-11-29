@@ -90,6 +90,22 @@ header {
     display: block;
 }
 
+.login_block {
+    z-index: 0;
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100%;
+    min-width: 100%;
+    display: -webkit-box;
+    display: flex;
+    -webkit-box-align: center;
+    align-items: center;
+    align-content: center;
+    -webkit-box-pack: center;
+    justify-content: center;
+}
+
 .container_login {
     z-index: 5;
     padding: 30px;
@@ -117,7 +133,7 @@ header {
     font-size: 20px;
 }
 
-.login_inp,   .password_inp {
+.form-input {
     height: 22px;
     width: 270px;
     font-size: 15px;

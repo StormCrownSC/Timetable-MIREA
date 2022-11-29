@@ -1,0 +1,20 @@
+{% extends 'blocks/base.html' %}
+{% block title %}Войти{% endblock %}
+{% block main %}
+
+<div class="login_block">
+    <div class="container_login">
+        <div class="login_main_text">Войти</div>
+        <form method="post">
+            {% csrf_token %}
+            <div class="error">{{ form.non_field_errors }}</div>
+            {% for f in form %}
+                <p><label class="login_text" for="{{ f.id_for_label }}">{{f.label}}: </label>{{ f }}</p>
+                <div class="error">{{ f.errors }}</div>
+            {% endfor %}
+            <button type="submit" id="enter">Войти</button>
+            <a type="submit" href="/accounts/register">Зарегистрироваться</a>
+        </form>
+    </div>
+</div>
+{% endblock %}

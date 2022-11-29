@@ -1,0 +1,17 @@
+{% extends 'blocks/base.html' %}
+{% block title %}Регистрация{% endblock %}
+{% block main %}
+<div class="login_block">
+    <div class="container_login">
+        <div class="login_main_text">Регистрация</div>
+        <form method="post">
+            {% csrf_token %}
+            {% for f in form %}
+                <p><label class="form-label" for="{{ f.id_for_label }}">{{f.label}}: </label>{{ f }}</p>
+                <div class="form-error">{{ f.errors }}</div>
+            {% endfor %}
+            <button type="submit" id="enter">Регистрация</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
