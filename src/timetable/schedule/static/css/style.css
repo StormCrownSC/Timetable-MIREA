@@ -119,6 +119,7 @@ header {
 }
 
 .container_login_wrapper {
+    width: 100%;
     clear: both; 
     text-align: right; 
     line-height: 25px;
@@ -131,7 +132,7 @@ header {
 
 .error {
     color: red;
-    margin-bottom: 20px;
+    margin-top: 20px;
     font-size: 20px;
 }
 

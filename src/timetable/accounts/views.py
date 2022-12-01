@@ -4,8 +4,13 @@ from django.views.generic import CreateView
 from django.contrib.auth.views import LoginView
 from django.contrib.auth.forms import UserCreationForm
 from django.urls import reverse_lazy
+from django.contrib.auth.models import User
+from django.contrib.auth.decorators import login_required
 
 from .forms import *
+from .models import *
+
+import re
 
 class RegisterUser(CreateView):
     form_class = RegisterUserForm
@@ -19,6 +24,11 @@ class RegisterUser(CreateView):
     def form_valid(self, form):
         user = form.save()
         login(self.request, user)
+        group = StudyGroup(
+            author=user,
+            study_group=re.findall(r'value="([\w-]+)"', str(form['study_group']))[0]
+        )
+        group.save()
         return redirect('/accounts/login')
 
 class LoginUser(LoginView):
@@ -36,3 +46,12 @@ class LoginUser(LoginView):
 def logout_user(request):
     logout(request)
     return redirect('/accounts/login')
+
+
+@login_required
+def profile(request):
+    context = {}
+    context = {
+        'study_group': StudyGroup.objects.get(author=request.user)
+    }
+    return render(request, 'profile.html', context)

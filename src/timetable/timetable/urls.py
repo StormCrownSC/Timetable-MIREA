@@ -20,6 +20,6 @@ from django.contrib.auth import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', index_page, name='home'),
+    path('', include('schedule.urls')),
     path('accounts/', include('accounts.urls'))
 ]

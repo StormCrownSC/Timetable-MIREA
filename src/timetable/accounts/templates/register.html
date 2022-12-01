@@ -4,7 +4,7 @@
 <div class="login_block">
     <div class="container_login">
         <div class="login_main_text">Регистрация</div>
-        <form method="post">
+        <form method="POST">
             {% csrf_token %}
             {% for f in form %}
                 <div class="container_login_wrapper"><label class="login_text" for="{{ f.id_for_label }}">{{f.label}}: </label>{{ f }}</div>

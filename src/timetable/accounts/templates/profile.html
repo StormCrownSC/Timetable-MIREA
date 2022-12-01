@@ -1,0 +1,14 @@
+{% extends 'blocks/base.html' %}
+{% block title %}Профиль{% endblock %}
+{% block main %}
+    <div class="login_block">
+        <div class="container_login">
+            <div class="login_main_text">Профиль</div>
+            <img class="rounded-circle account-img" src="{{ user.profile.image.url }}">
+            <div class="container_login_wrapper"><p class="login_text">Логин:</p><p class="login_text">{{ user.username }}</p></div>
+            <div class="container_login_wrapper"><p class="login_text">Почта:</p><p class="login_text">{{ user.email }}</p></div>
+            <div class="container_login_wrapper"><p class="login_text"> Группа:</p><p class="login_text">{{ study_group }}</p></div>
+            <a type="submit" href="/accounts/logout" class="error">Выйти из аккаунта</a>
+        </div>
+    </div>
+{% endblock %}
