@@ -13,7 +13,6 @@ from psycopg2 import Error
 import pyexcel as p
 
 
-
 class Parser:
     def __init__(self):
         self.log("start parser")
@@ -22,6 +21,7 @@ class Parser:
         self.lecturer_list = set()
         self.lessons_list = self.list_of_lessons()
         self.degree_list = ["Бакалавриат", "Специалитет", "Магистратура", "Аспирантура"]
+        self.course = 0
 
         self.main()
 
@@ -95,6 +95,7 @@ class Parser:
             
             for tmp in lecturer_temp:
                 self.lecturer_list.add(tmp.rstrip())
+            self.lecturer_list = set(lecturer_list)
 
             lesson_title = ' '.join(str(sheet.cell(row=item, column=col).value).split())
             type_of_lesson = ' '.join(str(sheet.cell(row=item, column=col+1).value).split())
@@ -116,6 +117,7 @@ class Parser:
                 file += "x"
             book = openpyxl.load_workbook("temp/" + file)
             institute_name, course_num, temple = file.split("_-_")
+            self.course = int(course_num) if int(course_num) > self.course else self.course
             for name in book.sheetnames:
                 sheet = book[name]
                 flag = False
@@ -242,6 +244,17 @@ class Parser:
                     connection.commit()
             self.log("Таблица институтов успешно заполнена")
 
+    def course_table(self, connection):
+        with connection.cursor() as cursor:
+            for elem in range(1, self.course + 1):
+                if cursor.execute("SELECT COUNT(*) FROM course WHERE id_of_course = '" + str(elem) + "'") is None:
+                    insert_query = "INSERT INTO course (id_of_course) VALUES"
+                    insert_query += " ('" + str(elem) + "'),"
+                    insert_query = insert_query[:-1]
+                    cursor.execute(insert_query)
+                    connection.commit()
+            self.log("Таблица курсов успешно заполнена")
+
     def degree_table(self, connection):
         with connection.cursor() as cursor:
             for elem in self.degree_list:
@@ -289,6 +302,7 @@ class Parser:
                 self.call_schedule_table(connection)
                 self.degree_table(connection)
                 self.institute_table(connection)
+                self.course_table(connection)
                 self.study_group_table(connection)
                 self.timetable_table(connection)
                 self.log("Соединение с PostgreSQL закрыто")
@@ -311,6 +325,9 @@ class Parser:
 
 
 if __name__ == "__main__":
-    while True:
-        Parser()
-        time.sleep(14400)
+    try:
+        while True:
+            Parser()
+            time.sleep(14400)
+    except KeyboardInterrupt():
+        pass

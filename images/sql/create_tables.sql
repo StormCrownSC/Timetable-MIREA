@@ -2,18 +2,6 @@ CREATE DATABASE TimeTableDB;
 ALTER ROLE denis SET client_encoding TO 'utf8';
 GRANT ALL PRIVILEGES ON DATABASE TimeTableDB TO denis;
 
-CREATE SEQUENCE auth_users_id_user_seq START WITH 1;
-
-CREATE TABLE IF NOT EXISTS auth_users
-(
-    user_id integer NOT NULL DEFAULT nextval('auth_users_id_user_seq'),
-    user_name character(150) NOT NULL,
-    user_password character(128) NOT NULL, 
-    user_email character(254) NOT NULL,
-    is_super_user bool NOT NULL,
-    CONSTRAINT user_id PRIMARY KEY (user_id)
-);
-
 CREATE SEQUENCE lecturer_id_lecturer_seq START WITH 1;
 
 CREATE TABLE IF NOT EXISTS lecturer
@@ -62,7 +50,7 @@ CREATE SEQUENCE id_group_seq START WITH 1;
 CREATE TABLE IF NOT EXISTS study_group
 (
     id_group integer NOT NULL DEFAULT nextval('id_group_seq'),
-    group_name character(100) NOT NULL,
+    group_name character(20) NOT NULL,
     id_institute integer,
     id_of_course integer NOT NULL,
     id_degree integer,
