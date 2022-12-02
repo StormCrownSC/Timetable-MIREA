@@ -8,7 +8,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 
 from .forms import *
-from .models import *
+from schedule.models import *
 
 import re
 
@@ -24,7 +24,7 @@ class RegisterUser(CreateView):
     def form_valid(self, form):
         user = form.save()
         login(self.request, user)
-        group = StudyGroup(
+        group = UserProfileInfo(
             author=user,
             study_group=re.findall(r'value="([\w-]+)"', str(form['study_group']))[0]
         )
@@ -52,6 +52,6 @@ def logout_user(request):
 def profile(request):
     context = {}
     context = {
-        'study_group': StudyGroup.objects.get(author=request.user)
+        'study_group': UserProfileInfo.objects.get(author=request.user)
     }
     return render(request, 'profile.html', context)
