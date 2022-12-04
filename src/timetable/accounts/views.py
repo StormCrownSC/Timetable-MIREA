@@ -22,14 +22,22 @@ class RegisterUser(CreateView):
         return dict(list(context.items()))
 
     def form_valid(self, form):
-        user = form.save()
-        login(self.request, user)
-        group = UserProfileInfo(
-            author=user,
-            study_group=re.findall(r'value="([\w-]+)"', str(form['study_group']))[0]
-        )
-        group.save()
-        return redirect('/accounts/login')
+        group_name = str(re.findall(r'value="([\w-]+)"', str(form['study_group']))[0]).upper()
+        try:
+            id_group = int(str(StudyGroup.objects.get(group_name=group_name)))
+            user = form.save()
+            login(self.request, user)
+            group = UserProfileInfo(
+                author=user,
+                study_group=group_name,
+                id_study_group=id_group
+            )
+            group.save()
+            self.request.session['type_of_enter_data'] = 'week'
+            return redirect('/accounts/login')
+        except:
+            return redirect('/accounts/register')
+        
 
 class LoginUser(LoginView):
     form_class = LoginUserForm
@@ -52,6 +60,6 @@ def logout_user(request):
 def profile(request):
     context = {}
     context = {
-        'study_group': UserProfileInfo.objects.get(author=request.user)
+        'study_group': str(UserProfileInfo.objects.get(author=request.user)).split()[0]
     }
     return render(request, 'profile.html', context)

@@ -1,7 +1,13 @@
 FROM ubuntu:22.10
 ENV PIP_ROOT_USER_ACTION=ignore
 COPY ./images/django/requirements.txt /tmp/
-RUN apt-get -qq update && apt-get -qq install python3-pip && \
+RUN apt-get -qq update && apt-get -qq install python3-pip locales && \
+    sed -i -e 's/# ru_RU.UTF-8 UTF-8/ru_RU.UTF-8 UTF-8/' /etc/locale.gen && \
+    dpkg-reconfigure --frontend=noninteractive locales && \
     pip3 install pip --upgrade && pip install -r /tmp/requirements.txt && mkdir /django/
+
+ENV LANG ru_RU.UTF-8
+ENV LC_ALL ru_RU.UTF-8
+
 #COPY ./src /django/
 WORKDIR /django

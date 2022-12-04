@@ -83,84 +83,85 @@ class Parser:
                 executor.map(self.remove_file, os.listdir("temp"))
 
     def data_of_lesson(self, sheet, item, col, global_col):
-        try:
-            new_item = item
-            if sheet.cell(row=new_item, column=global_col).value is None:
-                new_item -= 1
-            lesson_number = sheet.cell(row=new_item, column=global_col).value
-            if sheet.cell(row=new_item-2, column=col).value == 7 or lesson_number == 8:
-                lesson_number += 1
-            tmp_of_lecturer = sheet.cell(row=item, column=col+2).value
-            lecturer_temp = re.findall(r"[\w]+. \w.\w.", tmp_of_lecturer) if tmp_of_lecturer is not None else []
-            
-            for tmp in lecturer_temp:
-                self.lecturer_list.add(tmp.rstrip())
-            self.lecturer_list = set(lecturer_list)
-
-            lesson_title = ' '.join(str(sheet.cell(row=item, column=col).value).split())
-            type_of_lesson = ' '.join(str(sheet.cell(row=item, column=col+1).value).split())
-            auditorium = ' '.join(str(sheet.cell(row=item, column=col+3).value).split())
-            
-            temp_array = [lesson_title, type_of_lesson, ' '.join(lecturer_temp), auditorium]
-            type_of_week = 2
-            if sheet.cell(row=item, column=global_col+3).value == "I":
-                type_of_week = 1
-            return type_of_week, lesson_number, temp_array
-        except:
-            return None, None, None
+        # try:
+        new_item = item
+        if sheet.cell(row=new_item, column=global_col).value is None:
+            new_item -= 1
+        lesson_number = sheet.cell(row=new_item, column=global_col).value
+        if sheet.cell(row=new_item-2, column=col).value == 7 or lesson_number == 8:
+            lesson_number += 1
+        tmp_of_lecturer = sheet.cell(row=item, column=col+2).value
+        lecturer_temp = re.findall(r"[\w]+. \w.\w.", tmp_of_lecturer) if tmp_of_lecturer is not None else []
+        lecturer_temp_array = set()
+        for tmp in lecturer_temp:
+            temple = tmp.rstrip()
+            lecturer_temp_array.add(temple)
+            self.lecturer_list.add(temple)
+        
+        lesson_title = ' '.join(str(sheet.cell(row=item, column=col).value).split())
+        type_of_lesson = ' '.join(str(sheet.cell(row=item, column=col+1).value).split())
+        auditorium = ' '.join(str(sheet.cell(row=item, column=col+3).value).split())
+        
+        temp_array = [lesson_title, type_of_lesson, ' '.join(lecturer_temp_array), auditorium]
+        type_of_week = 2
+        if sheet.cell(row=item, column=global_col+3).value == "I":
+            type_of_week = 1
+        return type_of_week, lesson_number, temp_array
+        # except:
+        #     return None, None, None
         
     def read_files(self, file):
-        try:
-            if file[-1:] != "x":
-                p.save_book_as(file_name="temp/" + file, dest_file_name="temp/" + file + "x")
-                os.remove("temp/" + file)
-                file += "x"
-            book = openpyxl.load_workbook("temp/" + file)
-            institute_name, course_num, temple = file.split("_-_")
-            self.course = int(course_num) if int(course_num) > self.course else self.course
-            for name in book.sheetnames:
-                sheet = book[name]
-                flag = False
+        # try:
+        if file[-1:] != "x":
+            p.save_book_as(file_name="temp/" + file, dest_file_name="temp/" + file + "x")
+            os.remove("temp/" + file)
+            file += "x"
+        book = openpyxl.load_workbook("temp/" + file)
+        institute_name, course_num, temple = file.split("_-_")
+        self.course = int(course_num) if int(course_num) > self.course else self.course
+        for name in book.sheetnames:
+            sheet = book[name]
+            flag = False
 
-                for index, arr in enumerate(sheet):
-                    flag_optimize = False
-                    global_col = None
-                    max_row = sheet.max_row
-                    first_len_flag = True
-                    for elem in arr:
-                        if len(re.findall(r"\w\w\w\w\-\d\d\-\d\d", str(elem.value))) != 0:
-                            flag = True
-                            flag_optimize = True
-                            col = elem.column
-                            letter = elem.row
-                            if global_col is None:
-                                global_col = elem.column - 4
-                            temp_dict = {1: {}, 2: {}}
-                            day_index = 0
-                            for item in range(letter + 2, max_row):
-                                if first_len_flag is True and sheet.cell(row=item, column=global_col).value is None \
-                                    and sheet.cell(row=item-1, column=global_col).value is None:
-                                    first_len_flag = False
-                                    max_row = item
-                                    break
-                                if sheet.cell(row=item, column=global_col).value is not None and \
-                                    re.search(r'1', str(sheet.cell(row=item, column=global_col).value)):
-                                    day_index += 1
-                                    temp_dict[1][day_index] = {}
-                                    temp_dict[2][day_index] = {}
-                                type_of_week, lesson_number, tmp_data = self.data_of_lesson(sheet, item, col, global_col)
-                                if type(lesson_number) == int:
-                                    temp_dict[type_of_week][day_index][lesson_number] = tmp_data
-                            
-                            enter_data = {"data": temp_dict, "institute": institute_name, "course": course_num}
-                            self.timetable[re.findall(r"\w\w\w\w\-\d\d\-\d\d", str(elem.value))[0]] = enter_data
-                        if flag_optimize is False and index > 10:
-                            break
-                    if flag is True:
+            for index, arr in enumerate(sheet):
+                flag_optimize = False
+                global_col = None
+                max_row = sheet.max_row
+                first_len_flag = True
+                for elem in arr:
+                    if len(re.findall(r"\w\w\w\w\-\d\d\-\d\d", str(elem.value))) != 0:
+                        flag = True
+                        flag_optimize = True
+                        col = elem.column
+                        letter = elem.row
+                        if global_col is None:
+                            global_col = elem.column - 4
+                        temp_dict = {1: {}, 2: {}}
+                        day_index = 0
+                        for item in range(letter + 2, max_row):
+                            if first_len_flag is True and sheet.cell(row=item, column=global_col).value is None \
+                                and sheet.cell(row=item-1, column=global_col).value is None:
+                                first_len_flag = False
+                                max_row = item
+                                break
+                            if sheet.cell(row=item, column=global_col).value is not None and \
+                                re.search(r'1', str(sheet.cell(row=item, column=global_col).value)):
+                                day_index += 1
+                                temp_dict[1][day_index] = {}
+                                temp_dict[2][day_index] = {}
+                            type_of_week, lesson_number, tmp_data = self.data_of_lesson(sheet, item, col, global_col)
+                            if type(lesson_number) == int:
+                                temp_dict[type_of_week][day_index][lesson_number] = tmp_data
+                        
+                        enter_data = {"data": temp_dict, "institute": institute_name, "course": course_num}
+                        self.timetable[re.findall(r"\w\w\w\w\-\d\d\-\d\d", str(elem.value))[0]] = enter_data
+                    if flag_optimize is False and index > 10:
                         break
-            return 1
-        except:
-            return 0
+                if flag is True:
+                    break
+        return 1
+        # except:
+        #     return 0
 
     def parse_data(self):
         self.log("start parse data")
@@ -191,9 +192,9 @@ class Parser:
                 for type_of_week, type_of_week_arr in arr["data"].items():
                     for day_week, day_array in type_of_week_arr.items():
                         for subject_to_number, subject_number_array in day_array.items():
-                            if cursor.execute("SELECT COUNT(*) FROM timetable WHERE id_to_group = '" + str(id_group) + "' and " + \
-                                "subject_to_number = '" + str(subject_to_number) + "' and " + "day_week = '" + str(day_week) + "' and " + \
-                                "type_of_week = '" + str(type_of_week) + "'") is None:
+                            if cursor.execute("SELECT COUNT(*) FROM timetable WHERE id_to_group = " + str(id_group) + " and " + \
+                                "subject_to_number = " + str(subject_to_number) + " and " + "day_week = " + str(day_week) + " and " + \
+                                "type_of_week = " + str(type_of_week) + "") is None:
                                 edit = True
                                 subject_title = subject_number_array[0]
                                 auditorium = subject_number_array[3]
@@ -203,11 +204,11 @@ class Parser:
                                 if not id_lectur.isdigit():
                                     id_lectur = "NULL"
                                 else:
-                                    id_lectur = "'" + id_lectur + "'"
+                                    id_lectur = "" + id_lectur + ""
 
-                                insert_query += " ('" + str(id_group) + "', '" + str(subject_to_number) + "', " + str(id_lectur) + \
-                                    ", '" + str(subject_title) + "', '" + str(auditorium) + "', '" + str(day_week) + "', '" + \
-                                        str(type_of_week) + "'),"
+                                insert_query += " (" + str(id_group) + ", " + str(subject_to_number) + ", " + str(id_lectur) + \
+                                    ", '" + str(subject_title) + "', '" + str(auditorium) + "', " + str(day_week) + ", " + \
+                                        str(type_of_week) + "),"
                 if edit is True:
                     insert_query = insert_query[:-1]
                     cursor.execute(insert_query)

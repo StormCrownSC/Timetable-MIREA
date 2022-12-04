@@ -8,9 +8,10 @@ class UserProfileInfo(models.Model):
         on_delete=models.CASCADE
     )
     study_group = models.CharField(max_length=10)
+    id_study_group = models.IntegerField()
 
     def __str__(self):
-        return self.study_group
+        return f'{self.study_group} {self.id_study_group}'
 
 # This is an auto-generated Django model module.
 # You'll have to do the following manually to clean this up:
@@ -25,6 +26,9 @@ class CallSchedule(models.Model):
     subject_number = models.IntegerField(primary_key=True)
     time_start = models.TimeField()
     time_end = models.TimeField()
+
+    def __str__(self):
+        return f'{self.time_start} {self.time_end}'
 
     class Meta:
         managed = False
@@ -61,6 +65,9 @@ class Lecturer(models.Model):
     id_lecturer = models.AutoField(primary_key=True)
     full_name = models.CharField(max_length=100)
 
+    def __str__(self):
+        return str(self.full_name)
+
     class Meta:
         managed = False
         db_table = 'lecturer'
@@ -72,6 +79,9 @@ class StudyGroup(models.Model):
     id_institute = models.IntegerField(blank=True, null=True)
     id_of_course = models.IntegerField()
     id_degree = models.IntegerField(blank=True, null=True)
+
+    def __str__(self):
+        return str(self.id_group)
 
     class Meta:
         managed = False
@@ -86,6 +96,10 @@ class Timetable(models.Model):
     auditorium = models.CharField(max_length=500, blank=True, null=True)
     day_week = models.IntegerField()
     type_of_week = models.IntegerField()
+
+    def __str__(self):
+        return f'{self.subject_title}_-_{self.id_lectur}_-_{self.auditorium}'
+
 
     class Meta:
         managed = False
