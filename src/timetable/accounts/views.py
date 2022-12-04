@@ -9,6 +9,7 @@ from django.contrib.auth.decorators import login_required
 
 from .forms import *
 from schedule.models import *
+from schedule.views import current_themes
 
 import re
 
@@ -18,7 +19,7 @@ class RegisterUser(CreateView):
     success_url = reverse_lazy('/accounts/login')
 
     def get_context_data(self, *, object_list=None, **kwargs):
-        context = super().get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs) | {"themes": current_themes(self.request)}
         return dict(list(context.items()))
 
     def form_valid(self, form):
@@ -34,6 +35,7 @@ class RegisterUser(CreateView):
             )
             group.save()
             self.request.session['type_of_enter_data'] = 'week'
+            self.request.session['themes'] = 'dark'
             return redirect('/accounts/login')
         except:
             return redirect('/accounts/register')
@@ -44,7 +46,7 @@ class LoginUser(LoginView):
     template_name = 'login.html'
 
     def get_context_data(self, *, object_list=None, **kwargs):
-        context = super().get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs) | {"themes": current_themes(self.request)}
         return dict(list(context.items()))
 
     def get_success_url(self):
@@ -60,6 +62,7 @@ def logout_user(request):
 def profile(request):
     context = {}
     context = {
-        'study_group': str(UserProfileInfo.objects.get(author=request.user)).split()[0]
+        'study_group': str(UserProfileInfo.objects.get(author=request.user)).split()[0],
+        "themes": current_themes(request)
     }
     return render(request, 'profile.html', context)

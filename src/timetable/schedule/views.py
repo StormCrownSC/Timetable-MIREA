@@ -8,9 +8,11 @@ from datetime import datetime, date
 import locale
 import calendar
 
+def current_themes(request):
+    return request.session.get('themes', 'dark')
 
 def index_page(request):
-    return render(request, 'index.html')
+    return render(request, 'index.html', {"themes": current_themes(request)})
 
 def find_date():
     date_now = datetime.now()
@@ -98,7 +100,6 @@ def generate_date(id_group, type_of_enter_data):
                 pass
     return data
 
-
 @login_required
 def timetable_page(request):
     type_of_enter_data = request.session.get('type_of_enter_data', 'week')
@@ -111,7 +112,8 @@ def timetable_page(request):
         'group': group_name,
         'data': data,
         'type': type_of_enter_data,
-        'calendar': calendar.LocaleHTMLCalendar(locale='ru_RU.UTF-8').formatmonth(datetime.today().year, datetime.today().month)
+        'calendar': calendar.LocaleHTMLCalendar(locale='ru_RU.UTF-8').formatmonth(datetime.today().year, datetime.today().month),
+        "themes": current_themes(request)
     }
     return render(request, "timetable.html", context)
 

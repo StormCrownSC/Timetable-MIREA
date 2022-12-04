@@ -26,8 +26,8 @@ body {
     display: -webkit-box;
     display: flex;
     flex-direction: column;
-    color: #333333;
-    background-color: #EDEEF0;
+    color: #E1E3E6;
+    background-color: #141414;
 }
 
 /*  HEADER  */
@@ -40,7 +40,7 @@ header {
     height: 7vh;
     padding-right: 10px;
     padding-left: 10px;
-    background-color: #FFFFFF;
+    background-color: #222222;
 }
 
 main {
@@ -55,7 +55,7 @@ main {
     padding: 10px;
     font-size: 30px;
     text-decoration: none;
-    color: rgb(54, 52, 48);
+    color: #E1E3E6;
 }
 
 .timetable_header {
@@ -64,13 +64,13 @@ main {
     margin-top: 8px;
     font-size: 20px;
     text-decoration: none;
-    color: rgb(54, 52, 48);
+    color: #E1E3E6;
 }
 
 .login {
     z-index: 1;
     padding: 10px;
-    color: rgb(54, 52, 48);
+    color: #E1E3E6;
     font-size: 20px;
     text-decoration: none;
 }
@@ -81,7 +81,7 @@ main {
     padding: 10px;
     font-size: 20px;
     text-decoration: none;
-    color: rgb(54, 52, 48);
+    color: #E1E3E6;
 }
 
 
@@ -89,19 +89,19 @@ main {
     padding: 10px;
     font-size: 20px;
     text-decoration: none;
-    color: rgb(186, 174, 146);
+    color: #E1E3E6;
     border-bottom: solid rgb(187, 187, 187);
 }
 
 .main_header:hover,   .login:hover,  .settings:hover,   .background:hover,   .light:hover, 
   .timetable_header:hover, .setting_exit:hover,  .light:hover,  .dark:hover {
-    color: black;
+    color: white;
 }
 
 .dropdown{
     margin-top: 10px;
     position: relative;
-    color: rgb(54, 52, 48);
+    color: #E1E3E6;
 }
 
 .dropdown-content {
@@ -111,13 +111,13 @@ main {
     right: -50px;
     background-color: #f1f1f1;
     min-width: 220px;
-    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-
-    color: rgb(54, 52, 48);
+    box-shadow: 0px 8px 16px 0px rgba(185, 174, 174, 0.2);
+    background-color: #222222;
+    color: #E1E3E6;
 }
 
 .dropdown-content a {
-    color: rgb(54, 52, 48);
+    color: #E1E3E6;
     padding: 12px 16px;
     text-decoration: none;
     display: block;
@@ -151,7 +151,7 @@ main {
     align-content: space-between;
     -webkit-box-pack: center;
     justify-content: center;
-    background-color: #FFFFFF;
+    background-color: #222222;
 }
 
 .container_login_wrapper {
@@ -212,7 +212,7 @@ main {
     font-size: 20px;
     text-decoration: none;
 
-    color: rgb(54, 52, 48);
+    color: #E1E3E6;
 
     display: -webkit-box;
     display: flex;
@@ -224,7 +224,7 @@ main {
 }
 
 .registration_button:hover {
-    color: black;
+    color: white;
 }
 
 /* Стили для timetable */
@@ -239,6 +239,7 @@ main {
     align-content: space-around;
     -webkit-box-pack: justify;
     justify-content: space-around;
+    color: #E1E3E6;
 }
 
 .timetable_panel {
@@ -254,7 +255,7 @@ main {
     align-content: space-around;
     -webkit-box-pack: justify;
     justify-content: space-around;
-    background-color: #FFFFFF;
+    background-color: #222222;
 }
 
 .timetable_panel_wrapper {
@@ -269,7 +270,7 @@ main {
     align-content: space-around;
     -webkit-box-pack: center;
     justify-content: space-around;
-    background-color: #FFFFFF;
+    background-color: #222222;
 }
 
 .timetable_body {
@@ -300,46 +301,47 @@ main {
 .timetable_table {
     z-index: 7;
     border-spacing: 0;
+    background-color: #222222;
 }
 
 .timetable_elem {
     z-index: 7;
     text-align: center;
-    border-bottom: 1px solid #F4EEE8;
+    border-bottom: 1px solid #000000;
     transition: all 0.5s linear;
 }
 
 .timetable_elem:first-child {
     text-align: left;
-    color: #3D3511;
+    color: #E1E3E6;
     font-weight: bold;
 }
 
 .timetable_body_header {
     z-index: 7;
     padding: 10px 20px;
-    color: #3D3511;
+    color: #E1E3E6;
     font-size: 24px;
     text-align: center;
-    border-bottom: 1px solid #F4EEE8;
+    border-bottom: 1px solid #000000;
     border-top-left-radius: 10px;
     border-top-right-radius: 10px;
 }
 
 .timetable_elem:nth-child(even) {
-    background: #F6D27E;
+    background-color: #2e2b2b;
 }
 
 .timetable_elem:nth-child(odd) {
-    background: #D1C7BF;
+    background-color: #474747;
 }
 
 .timetable_body_header:nth-child(even)  {
-    background: #F6D27E;
+    background-color: #2e2b2b;
 }
 
 .timetable_body_header:nth-child(odd)  {
-    background: #D1C7BF;
+    background-color: #474747;
 }
 
 /* .timetable_elem:first-child {
@@ -351,13 +353,13 @@ main {
 } */
 
 .timetable_elem:hover {
-    background: #D1C7BF;
+    background: #000000;
 }
 
 .timetable_type_info {
     z-index: 7;
     padding-bottom: 10px;
-    color: #3D3511;
+    color: #E1E3E6;
     font-size: 24px;
     text-align: center;
 }

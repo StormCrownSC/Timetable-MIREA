@@ -13,6 +13,7 @@ document.addEventListener( 'click', (e) => {
     const withinBoundaries_2 = e.composedPath().includes(div);
 	if (! withinBoundaries_1 && ! withinBoundaries_2) {
 		div.style.display = 'none';
+		
 	}
 })
 

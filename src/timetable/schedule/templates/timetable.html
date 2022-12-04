@@ -32,9 +32,9 @@
                             {% for day in data %}
                                 <tr class="timetable_column">
                                     {% for elem in day  %}
-                                        <td class="timetable_elem">
+                                        <td class="timetable_elem" style="text-align: center;">
                                             {% if elem|length == 3  %}
-                                                <p style="border-bottom: 1px solid;">{{ elem.0 }}, {{ elem.2 }}</p>
+                                                <p style="border-bottom: 1px solid #5a5a5a;">{{ elem.0 }}, {{ elem.2 }}</p>
                                                 <p>{{ elem.1 }}</p>
                                             {% elif elem|length == 2  %}
                                                 <p style="text-align: center;">{{ elem.0 }}</p>

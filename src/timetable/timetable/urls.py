@@ -18,8 +18,18 @@ from django.urls import path, include
 from schedule.views import index_page
 from django.contrib.auth import views
 
+from django.shortcuts import render, redirect
+
+def change_themes(request):
+    if request.session.get('themes', 'dark') == 'dark':
+        request.session['themes'] = 'light'
+    else:
+        request.session['themes'] = 'dark'
+    return redirect(request.META.get('HTTP_REFERER'))
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('schedule.urls')),
-    path('accounts/', include('accounts.urls'))
+    path('accounts/', include('accounts.urls')),
+    path(r'change_themes', change_themes)
 ]
