@@ -351,7 +351,7 @@ main {
 } */
 
 .timetable_elem:hover {
-    background: #D1C7BF;
+    background-color: #f1f1f1;
 }
 
 .timetable_type_info {
