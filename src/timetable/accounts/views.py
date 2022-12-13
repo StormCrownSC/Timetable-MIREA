@@ -60,7 +60,6 @@ def logout_user(request):
 
 @login_required
 def profile(request):
-    context = {}
     context = {
         'study_group': str(UserProfileInfo.objects.get(author=request.user)).split()[0],
         "themes": current_themes(request)
