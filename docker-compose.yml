@@ -38,8 +38,8 @@ services:
       dockerfile: images/django/Dockerfile.django
     restart: unless-stopped
     # Временно для тестирования и разработки
-    volumes:
-      - ./src:/django
+    #volumes:
+    #- ./src:/django
     # Временно для тестирования и разработки
     command: bash -rc "python3 timetable/manage.py makemigrations schedule &&
       python3 timetable/manage.py migrate schedule &&

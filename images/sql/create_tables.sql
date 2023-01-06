@@ -68,21 +68,3 @@ CREATE TABLE IF NOT EXISTS timetable
     type_of_week integer NOT NULL,
     CONSTRAINT fkey PRIMARY KEY (id_to_group, subject_to_number, day_week, type_of_week)
 );
-
-CREATE TRIGGER "group"
-    BEFORE INSERT
-    ON public.timetable
-    FOR EACH ROW
-    EXECUTE FUNCTION public.add_group();
-
-CREATE TRIGGER lector
-    BEFORE INSERT
-    ON public.timetable
-    FOR EACH ROW
-    EXECUTE FUNCTION public.add_lector();
-
-CREATE TRIGGER call
-    BEFORE INSERT
-    ON public.call_schedule
-    FOR EACH ROW
-    EXECUTE FUNCTION public.schedure();

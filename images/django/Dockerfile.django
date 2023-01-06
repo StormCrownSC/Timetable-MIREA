@@ -9,5 +9,5 @@ RUN apt-get -qq update && apt-get -qq install python3-pip locales && \
 ENV LANG ru_RU.UTF-8
 ENV LC_ALL ru_RU.UTF-8
 
-#COPY ./src /django/
+COPY ./src /django/
 WORKDIR /django
